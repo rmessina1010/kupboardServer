@@ -5,6 +5,11 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
+var findRouter = require('./routes/find');
+var viewRouter = require('./routes/view');
+//var loginRouter = require('./routes/login');
+//var joinRouter = require('./routes/join');
+//var dashRouter = require('./routes/dash');
 
 /// DB CONECTION BP
 const mongoose = require('mongoose');
