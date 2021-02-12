@@ -8,7 +8,7 @@ var indexRouter = require('./routes/index');
 var findRouter = require('./routes/find');
 var viewRouter = require('./routes/view');
 //var loginRouter = require('./routes/login');
-//var joinRouter = require('./routes/join');
+var joinRouter = require('./routes/join');
 //var dashRouter = require('./routes/dash');
 
 /// DB CONECTION BP
@@ -42,6 +42,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/find', findRouter);
 app.use('/view', viewRouter);
+app.use('/join', joinRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

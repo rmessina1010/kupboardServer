@@ -25,21 +25,13 @@ const ScheduleSchema = new Schema({
 /// User
 const KBUserSchema = new Schema({
     kup: {
-        type: mongoose.ObjectId,
-        ref: 'KBData.name'
-    },
-    email: {
-        type: mongoose.ObjectId,
-        ref: 'KBData.email'
+        type: Schema.Types.ObjectId,
+        ref: 'Kupboard',
     },
     password: {
-        type: mongoose.ObjectId,
-        ref: 'KBData.password'
-    },
-    kupID: {
         type: String,
         required: true
-    }
+    },
 });
 
 
@@ -108,10 +100,6 @@ const kupboardSchema = new Schema({
         type: String,
         required: true
     },
-    userPassword: {
-        type: String,
-        required: true
-    },
     map: {
         type: Boolean,
         default: true
@@ -123,5 +111,4 @@ const kupboardSchema = new Schema({
 
 const Kupboard = mongoose.model('Kupboard', kupboardSchema);
 const KBUser = mongoose.model('KBUser', KBUserSchema);
-module.exports = Kupboard;
-//module.exports.KBUser = KBUser;
+module.exports = { Kupboard, KBUser };

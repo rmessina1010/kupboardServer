@@ -1,6 +1,8 @@
 var express = require('express');
 var findRouter = express.Router();
-const Kupboard = require('../models/kupboard');
+const kupboardModule = require('../models/kupboard');
+const Kupboard = kupboardModule.Kupboard;
+
 const segmentSize = 20;
 
 /* GET users listing. */

@@ -1,6 +1,7 @@
 var express = require('express');
 var viewRouter = express.Router();
-const Kupboard = require('../models/kupboard');
+const kupboardModule = require('../models/kupboard');
+const Kupboard = kupboardModule.Kupboard;
 
 
 viewRouter.route('/')
@@ -17,7 +18,6 @@ viewRouter.route('/:kupId')
     .get(function (req, res, next) {
         Kupboard.find({ _id: req.params.kupId })
             .then(kupboard => {
-
                 res.statusCode = kupboard[0] ? 200 : 404;
                 kupboard = kupboard[0] || { err: 'Kupboard not available' }
                 res.setHeader('Content-Type', 'text/html');
