@@ -3,7 +3,7 @@ var viewRouter = express.Router();
 const kupboardModule = require('../models/kupboard');
 const Kupboard = kupboardModule.Kupboard;
 const KBUser = kupboardModule.KBUser;
-
+const passport = require('passport');
 
 viewRouter.route('/')
     .get((req, res, next) => {
@@ -37,10 +37,24 @@ viewRouter.route('/')
         };
         Kupboard.create(newKup)
             .then(kupboard => {
-                KBUser.create({
-                    password: req.body.password,
-                    kup: kupboard._id,
-                }).then(user => {
+                KBUser.register(
+                    new KBUser({ kup: kupboard._id, username: req.body.kupboadName }),
+                    req.body.password
+                    // (err, user) => {
+                    //     if (err) {
+                    //         res.statusCode = 500;
+                    //         res.setHeader('Content-Type', 'text/html');
+                    //         res.json({ err: err, user: user });
+                    //     } else {
+                    //         passport.authenticate('local')(req, res, () => {
+                    //             console.log('New Account created ', kupboard, user);
+                    //             res.statusCode = 200;
+                    //             res.setHeader('Content-Type', 'text/html');
+                    //             res.json(kupboard);
+                    //         });
+                    //     }
+                    // }
+                ).then(user => {
                     console.log('New Account created ', kupboard, user);
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'text/html');

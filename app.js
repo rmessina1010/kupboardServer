@@ -4,11 +4,33 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+const passport = require('passport');
+const authenticate = require('./authenticate');
+
+
+var app = express();
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+function auth(req, res, next) {
+  console.log(req.user);
+
+  if (!req.user) {
+    const err = new Error('You are not authenticated!');
+    err.status = 401;
+    return next(err);
+  } else {
+    return next();
+  }
+}
+
+
 var indexRouter = require('./routes/index');
 var findRouter = require('./routes/find');
 var viewRouter = require('./routes/view');
-//var loginRouter = require('./routes/login');
 var joinRouter = require('./routes/join');
+//var loginRouter = require('./routes/login');
 //var dashRouter = require('./routes/dash');
 
 /// DB CONECTION BP
@@ -27,7 +49,6 @@ connect.then(
 );
 ///
 
-var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -43,6 +64,7 @@ app.use('/', indexRouter);
 app.use('/find', findRouter);
 app.use('/view', viewRouter);
 app.use('/join', joinRouter);
+app.use(auth);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

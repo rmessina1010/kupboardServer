@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const passportLocalMongoose = require('passport-local-mongoose');
+
 const Schema = mongoose.Schema;
 
 
@@ -27,13 +29,9 @@ const KBUserSchema = new Schema({
     kup: {
         type: Schema.Types.ObjectId,
         ref: 'Kupboard',
-    },
-    password: {
-        type: String,
-        required: true
-    },
+    }
 });
-
+KBUserSchema.plugin(passportLocalMongoose);
 
 // Kupboard
 const kupboardSchema = new Schema({
