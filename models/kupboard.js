@@ -102,6 +102,10 @@ const kupboardSchema = new Schema({
         type: Boolean,
         default: true
     },
+    status: {
+        type: String,
+        default: 'active'
+    },
 },
     { timestamps: true }
 );

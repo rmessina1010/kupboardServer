@@ -1,11 +1,13 @@
 var express = require('express');
-var viewRouter = express.Router();
+var joinRouter = express.Router();
 const kupboardModule = require('../models/kupboard');
 const Kupboard = kupboardModule.Kupboard;
 const KBUser = kupboardModule.KBUser;
 const passport = require('passport');
+const authenticate = require('../authenticate');// also in dash and login
 
-viewRouter.route('/')
+
+joinRouter.route('/')
     .get((req, res, next) => {
         KBUser.find().populate('kup', 'name userEmail userName')
             .then(users => {
@@ -67,4 +69,4 @@ viewRouter.route('/')
         res.statusCode = 405;
         res.end(req.method + ' operation not supported.');
     });
-module.exports = viewRouter;
+module.exports = joinRouter;

@@ -5,25 +5,25 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 const passport = require('passport');
-const authenticate = require('./authenticate');
+const config = require('./config');
 
 
 var app = express();
 
 app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.session());
 
-function auth(req, res, next) {
-  console.log(req.user);
+// function auth(req, res, next) {
+//   console.log(req.user);
 
-  if (!req.user) {
-    const err = new Error('You are not authenticated!');
-    err.status = 401;
-    return next(err);
-  } else {
-    return next();
-  }
-}
+//   if (!req.user) {
+//     const err = new Error('You are not authenticated!');
+//     err.status = 401;
+//     return next(err);
+//   } else {
+//     return next();
+//   }
+// }
 
 
 var indexRouter = require('./routes/index');
@@ -35,7 +35,7 @@ var joinRouter = require('./routes/join');
 
 /// DB CONECTION BP
 const mongoose = require('mongoose');
-const url = 'mongodb://localhost:27017/kupboard';
+const url = config.mongoUrl;
 const connect = mongoose.connect(url, {
   useCreateIndex: true,
   useFindAndModify: false,
@@ -64,7 +64,7 @@ app.use('/', indexRouter);
 app.use('/find', findRouter);
 app.use('/view', viewRouter);
 app.use('/join', joinRouter);
-app.use(auth);
+// app.use(auth);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
