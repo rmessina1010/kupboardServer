@@ -25,11 +25,11 @@ exports.jwtPassport = passport.use(
     new JwtStrategy(
         opts,
         (jwt_payload, done) => {
-            ///console.log('JWT payload:', jwt_payload);
-            User.findOne({ _id: jwt_payload._id }, (err, user) => {
+            //console.log('JWT payload:', jwt_payload);
+            KBUser.findOne({ _id: jwt_payload._id }, (err, user) => {
                 if (err) {
                     return done(err, false);
-                } else if (user) {
+                } else if (user && jwt_payload.iat > user.last) {
                     return done(null, user);
                 } else {
                     return done(null, false);

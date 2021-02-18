@@ -1,17 +1,18 @@
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
-var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+
+const cookieParser = require('cookie-parser');
+
 
 const passport = require('passport');
 const config = require('./config');
 
-
 var app = express();
 
 app.use(passport.initialize());
-// app.use(passport.session());
+app.use(passport.session());
 
 // function auth(req, res, next) {
 //   console.log(req.user);
@@ -26,12 +27,12 @@ app.use(passport.initialize());
 // }
 
 
-var indexRouter = require('./routes/index');
-var findRouter = require('./routes/find');
-var viewRouter = require('./routes/view');
-var joinRouter = require('./routes/join');
-//var loginRouter = require('./routes/login');
-//var dashRouter = require('./routes/dash');
+const indexRouter = require('./routes/index');
+const findRouter = require('./routes/find');
+const viewRouter = require('./routes/view');
+const joinRouter = require('./routes/join');
+const signinRouter = require('./routes/signin');
+//const dashRouter = require('./routes/dash');
 
 /// DB CONECTION BP
 const mongoose = require('mongoose');
@@ -64,7 +65,8 @@ app.use('/', indexRouter);
 app.use('/find', findRouter);
 app.use('/view', viewRouter);
 app.use('/join', joinRouter);
-// app.use(auth);
+app.use('/signin', signinRouter);
+//app.use(auth);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

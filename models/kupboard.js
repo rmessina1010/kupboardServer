@@ -21,6 +21,11 @@ const ScheduleSchema = new Schema({
     close: {
         type: String,
         required: true,
+    },
+
+    inKB: {
+        type: String,
+        required: true,
     }
 });
 
@@ -29,6 +34,10 @@ const KBUserSchema = new Schema({
     kup: {
         type: Schema.Types.ObjectId,
         ref: 'Kupboard',
+    },
+    last: {
+        type: Number,
+        default: 0
     }
 });
 KBUserSchema.plugin(passportLocalMongoose);
@@ -113,4 +122,5 @@ const kupboardSchema = new Schema({
 
 const Kupboard = mongoose.model('Kupboard', kupboardSchema);
 const KBUser = mongoose.model('KBUser', KBUserSchema);
-module.exports = { Kupboard, KBUser };
+const Schedule = mongoose.model('Schedule', ScheduleSchema);
+module.exports = { Kupboard, KBUser, Schedule };

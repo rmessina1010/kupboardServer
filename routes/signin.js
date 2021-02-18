@@ -1,11 +1,13 @@
 var express = require('express');
-var loginRouter = express.Router();
+var signinRouter = express.Router();
 const kupboardModule = require('../models/kupboard');
 const KBUser = kupboardModule.KBUser;
 const passport = require('passport');
+const authenticate = require('../authenticate');
 
-loginRouter
-    .post('/signin', passport.authenticate('local'), (req, res) => {
+
+signinRouter.route('/')
+    .post(passport.authenticate('local'), (req, res) => {
         const token = authenticate.getToken({ _id: req.user._id });
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -17,26 +19,39 @@ loginRouter
             kupName: '',
             kupId: '',
         });
+    }).get(authenticate.verifyUser, (req, res) => {
+        KBUser.find(req.user._id).populate('kup', 'name userEmail userName')
+            .then(user => {
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(user);
+            });
     })
-    .all('/login', (req, res) => {
+    .all((req, res) => {
         res.statusCode = 405;
         res.end(req.method + ' operation not supported.');
     });
 
-loginRouter.get('/logout', (req, res, next) => {
-    if (req.session) {
-        req.session.destroy();
-        res.clearCookie('session-id');
-        res.redirect('/');
-    } else {
-        const err = new Error('You are not logged in!');
-        err.status = 401;
-        return next(err);
-    }
-}).all('/logout', (req, res) => {
-    res.statusCode = 405;
-    res.end(req.method + ' operation not supported.');
-});
+signinRouter.route('/out')
+    .get(authenticate.verifyUser, (req, res, next) => {
+        KBUser.findByIdAndUpdate(req.user._id, { last: Math.floor(Date.now() / 1000) })
+            .then(() => {
+                if (req.session) {
+                    req.session.destroy();
+                    res.clearCookie('session-id');
+                }
+                res.setHeader('Content-Type', 'text/html');
+                res.statusCode = 200;
+                res.end('See you later.')
+            })
+            .catch(err => {
+                err.status = 401;
+                return next(err);
+            });
+    }).all((req, res) => {
+        res.statusCode = 405;
+        res.end(req.method + ' operation not supported.');
+    });
 
 
-module.exports = loginRouter;
+module.exports = signinRouter;
