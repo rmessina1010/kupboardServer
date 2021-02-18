@@ -1,5 +1,6 @@
 var express = require('express');
 var signinRouter = express.Router();
+var signoutRouter = express.Router();
 const kupboardModule = require('../models/kupboard');
 const KBUser = kupboardModule.KBUser;
 const passport = require('passport');
@@ -19,7 +20,9 @@ signinRouter.route('/')
             kupName: '',
             kupId: '',
         });
-    }).get(authenticate.verifyUser, (req, res) => {
+    })
+    /*
+    .get(authenticate.verifyUser, (req, res) => {
         KBUser.find(req.user._id).populate('kup', 'name userEmail userName')
             .then(user => {
                 res.statusCode = 200;
@@ -27,12 +30,13 @@ signinRouter.route('/')
                 res.json(user);
             });
     })
+    */
     .all((req, res) => {
         res.statusCode = 405;
         res.end(req.method + ' operation not supported.');
     });
 
-signinRouter.route('/out')
+signoutRouter.route('/')
     .get(authenticate.verifyUser, (req, res, next) => {
         KBUser.findByIdAndUpdate(req.user._id, { last: Math.floor(Date.now() / 1000) })
             .then(() => {
@@ -54,4 +58,4 @@ signinRouter.route('/out')
     });
 
 
-module.exports = signinRouter;
+module.exports = { signinRouter, signoutRouter };

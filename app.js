@@ -31,7 +31,8 @@ const indexRouter = require('./routes/index');
 const findRouter = require('./routes/find');
 const viewRouter = require('./routes/view');
 const joinRouter = require('./routes/join');
-const signinRouter = require('./routes/signin');
+const signinRouter = require('./routes/signin').signinRouter;
+const signoutRouter = require('./routes/signin').signoutRouter;
 //const dashRouter = require('./routes/dash');
 
 /// DB CONECTION BP
@@ -66,6 +67,7 @@ app.use('/find', findRouter);
 app.use('/view', viewRouter);
 app.use('/join', joinRouter);
 app.use('/signin', signinRouter);
+app.use('/signout', signoutRouter);
 //app.use(auth);
 
 // catch 404 and forward to error handler
