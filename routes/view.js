@@ -16,10 +16,10 @@ viewRouter.route('/')
 
 viewRouter.route('/:kupId')
     .get(function (req, res, next) {
-        Kupboard.find({ _id: req.params.kupId })
+        Kupboard.findById(req.params.kupId)
             .then(kupboard => {
-                res.statusCode = kupboard[0] ? 200 : 404;
-                kupboard = kupboard[0] || { err: 'Kupboard not available' }
+                res.statusCode = kupboard ? 200 : 404;
+                kupboard = kupboard || { err: 'Kupboard not available' }
                 res.setHeader('Content-Type', 'text/html');
                 res.json(kupboard);
             })

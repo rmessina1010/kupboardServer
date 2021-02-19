@@ -30,6 +30,8 @@ joinRouter.route('/')
             zip: req.body.zip,
             itemTypeCt: 0,
             hours: [],
+            inventory: [],
+            bulletins: [],
             details: "",
             share: "",
             userName: req.body.firstName,

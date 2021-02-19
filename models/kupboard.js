@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const passportLocalMongoose = require('passport-local-mongoose');
 
 const Schema = mongoose.Schema;
-
+const KupItemSchema = require('./item');
+const AnnouncementSchema = require('./announcement');
 
 
 const ScheduleSchema = new Schema({
@@ -107,6 +108,8 @@ const kupboardSchema = new Schema({
         type: String,
         required: true
     },
+    inventory: [AnnouncementSchema],
+    bulletins: [KupItemSchema],
     map: {
         type: Boolean,
         default: true
