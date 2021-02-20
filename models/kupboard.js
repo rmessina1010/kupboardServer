@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 const passportLocalMongoose = require('passport-local-mongoose');
 
 const Schema = mongoose.Schema;
-const KupItemSchema = require('./item');
-const AnnouncementSchema = require('./announcement');
+const KupItem = require('./item');
+const Announcement = require('./announcement');
 
 
 const ScheduleSchema = new Schema({
@@ -13,7 +13,6 @@ const ScheduleSchema = new Schema({
     },
     toDay: {
         type: String,
-        default: "",
     },
     open: {
         type: String,
@@ -87,7 +86,10 @@ const kupboardSchema = new Schema({
         type: Number,
         required: true,
     },
-    hours: [ScheduleSchema],
+    hours: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Schedule',
+    }],
     details: {
         type: String,
         default: ""
@@ -108,8 +110,14 @@ const kupboardSchema = new Schema({
         type: String,
         required: true
     },
-    inventory: [AnnouncementSchema],
-    bulletins: [KupItemSchema],
+    inventory: [{
+        type: Schema.Types.ObjectId,
+        ref: 'KupItem',
+    }],
+    bulletins: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Announcement',
+    }],
     map: {
         type: Boolean,
         default: true

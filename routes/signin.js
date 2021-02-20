@@ -21,7 +21,6 @@ signinRouter.route('/')
             kupId: '',
         });
     })
-    /*
     .get(authenticate.verifyUser, (req, res) => {
         KBUser.find(req.user._id).populate('kup', 'name userEmail userName')
             .then(user => {
@@ -30,7 +29,7 @@ signinRouter.route('/')
                 res.json(user);
             });
     })
-    */
+
     .all((req, res) => {
         res.statusCode = 405;
         res.end(req.method + ' operation not supported.');

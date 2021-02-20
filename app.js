@@ -33,7 +33,7 @@ const viewRouter = require('./routes/view');
 const joinRouter = require('./routes/join');
 const signinRouter = require('./routes/signin').signinRouter;
 const signoutRouter = require('./routes/signin').signoutRouter;
-//const dashRouter = require('./routes/dash');
+const dashRouter = require('./routes/dash');
 
 /// DB CONECTION BP
 const mongoose = require('mongoose');
@@ -68,6 +68,7 @@ app.use('/view', viewRouter);
 app.use('/join', joinRouter);
 app.use('/signin', signinRouter);
 app.use('/signout', signoutRouter);
+app.use('/dash', dashRouter);
 //app.use(auth);
 
 // catch 404 and forward to error handler

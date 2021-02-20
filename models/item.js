@@ -26,4 +26,4 @@ const KupItemSchema = new Schema({
 });
 
 const KupItem = mongoose.model('KupItem', KupItemSchema);
-module.exports.KupItem;
+module.exports = KupItem;
