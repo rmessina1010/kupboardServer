@@ -20,7 +20,7 @@ viewRouter.route('/:kupId')
             .then(kupboard => {
                 res.statusCode = kupboard ? 200 : 404;
                 kupboard = kupboard || { err: 'Kupboard not available' }
-                res.setHeader('Content-Type', 'text/html');
+                res.setHeader('Content-Type', 'text/html');//////
                 res.json(kupboard);
             })
             .catch(err => next(err));

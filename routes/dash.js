@@ -1,6 +1,8 @@
 var express = require('express');
 var dashRouter = express.Router();
 const kupboardModule = require('../models/kupboard');
+const mongoose = require('mongoose');
+
 const Kupboard = kupboardModule.Kupboard;
 const KBUser = kupboardModule.KBUser;
 const Schedule = kupboardModule.Schedule;
@@ -9,7 +11,6 @@ const Item = require('../models/item');
 
 const passport = require('passport');
 const authenticate = require('../authenticate');
-const e = require('express');
 
 // const handleUpdate = (data, model, inKB = null) => {
 //     data.forEach(mongoDoc => {
@@ -31,12 +32,12 @@ dashRouter.route('/:kupBoardId')
             .then(theKup => {
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'applications/json');
-                res.json(theKup);
+                res.json({ theKup: theKup });
             })
             .catch(err => next(err));
     })
     .put(authenticate.verifyUser, (req, res, next) => {
-        const updated = Kupboard.findByIdAndUpdate(req.params.kupBoardId, { $set: req.body.updateKup }, { new: true })
+        Kupboard.findByIdAndUpdate(req.params.kupBoardId, { $set: req.body.updateKup }, { new: true })
             .then(updated => {
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'applications/json');
@@ -58,10 +59,10 @@ dashRouter.route('/:kupBoardId')
                     Annoucement.deleteMany({ inKB: req.params.kupBoardId }),
                     Item.deleteMany({ inKB: req.params.kupBoardId })
                 ])
-                    .then(() => {
+                    .then(data => {
                         res.statusCode = 200;
                         res.setHeader('Content-Type', 'applications/json');
-                        res.json({ deleted: true });
+                        res.json({ deleted: true, data: data });
                     })
                     .catch(err => next(err));
             })
@@ -94,7 +95,7 @@ dashRouter.route('/:kupBoardId/announce')
         } else {
             res.statusCode = 200;
             res.setHeader('Content-Type', 'applications/json');
-            res.json({ added: false, message: 'nothing to insert' });
+            res.json({ added: false, message: 'Nothing to insert.' });
         }
 
     })
@@ -104,9 +105,10 @@ dashRouter.route('/:kupBoardId/announce')
         let updates = [];
         let AFNeedsUpdate = false;
         let promiseList = updateRows.map(row => {
-            if (!row.id) {
+            row.inKB = req.params.kupBoardId;
+            if (!row._id) {
                 AFNeedsUpdate = true;
-                row.id = new mongoose.mongo.ObjectID();
+                row._id = mongoose.Types.ObjectId();
             }
             return Annoucement.updateOne({ _id: row._id }, row, { upsert: true, new: true });
         });
@@ -115,7 +117,9 @@ dashRouter.route('/:kupBoardId/announce')
                 updates = ups;
                 if (req.body.deleteTargets) {
                     AFNeedsUpdate = true;
-                    deleted = Annoucement.deleteMany({ _id: { $in: req.body.deleteTargets }, inKB: req.params.kupBoardId });
+                    Annoucement.deleteMany({ _id: { $in: req.body.deleteTargets }, inKB: req.params.kupBoardId })
+                        .then(del => { deleted = del; })
+                        .catch(err => next(err));
                 }
             })
             .then(() => {
@@ -186,18 +190,22 @@ dashRouter.route('/:kupBoardId/items')
         let updates = [];
         let AFNeedsUpdate = false;
         let promiseList = updateRows.map(row => {
-            if (!row.id) {
+            row.inKB = req.params.kupBoardId;
+            if (!row._id) {
                 AFNeedsUpdate = true;
-                row.id = new mongoose.mongo.ObjectID();
+                row._id = mongoose.Types.ObjectId();
             }
             return Item.updateOne({ _id: row._id }, row, { upsert: true, new: true });
         });
+        console.log(promiseList);
         Promise.all(promiseList)
             .then(ups => {
                 updates = ups;
                 if (req.body.deleteTargets) {
                     AFNeedsUpdate = true;
-                    deleted = Item.deleteMany({ _id: { $in: req.body.deleteTargets }, inKB: req.params.kupBoardId });
+                    Item.deleteMany({ _id: { $in: req.body.deleteTargets }, inKB: req.params.kupBoardId })
+                        .then(del => { deleted = del; })
+                        .catch(err => next(err));
                 }
             })
             .then(() => {
@@ -207,7 +215,6 @@ dashRouter.route('/:kupBoardId/items')
                             updateKBArrField(req.params.kupBoardId, 'inventory', Item, { itemTypeCt: toCount.length });
                         })
                         .catch(err => next(err));
-
                 }
             })
             .then(() => {
@@ -278,9 +285,10 @@ dashRouter.route('/:kupBoardId/hours')
         let updates = [];
         let AFNeedsUpdate = false;
         let promiseList = updateRows.map(row => {
-            if (!row.id) {
+            row.inKB = req.params.kupBoardId;
+            if (!row._id) {
                 AFNeedsUpdate = true;
-                row.id = new mongoose.mongo.ObjectID();
+                row._id = mongoose.Types.ObjectId();
             }
             return Schedule.updateOne({ _id: row._id }, row, { upsert: true, new: true });
         });
@@ -289,7 +297,9 @@ dashRouter.route('/:kupBoardId/hours')
                 updates = ups;
                 if (req.body.deleteTargets) {
                     AFNeedsUpdate = true;
-                    deleted = Schedule.deleteMany({ _id: { $in: req.body.deleteTargets }, inKB: req.params.kupBoardId });
+                    Schedule.deleteMany({ _id: { $in: req.body.deleteTargets }, inKB: req.params.kupBoardId })
+                        .then(del => { deleted = del; })
+                        .catch(err => next(err));
                 }
             })
             .then(() => {
