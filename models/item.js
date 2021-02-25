@@ -15,7 +15,7 @@ const KupItemSchema = new Schema({
         type: Boolean,
         default: false
     },
-    active: {
+    act: {
         type: Boolean,
         default: true
     },

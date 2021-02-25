@@ -75,7 +75,6 @@ dashRouter.route('/:kupBoardId/announce')
     .get(authenticate.verifyUser, (req, res, next) => {
         Annoucement.find({ inKB: req.params.kupBoardId })
             .then(announcements => {
-                announcements = announcements || [];
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'applications/json');
                 res.json(announcements);
@@ -100,7 +99,7 @@ dashRouter.route('/:kupBoardId/announce')
 
     })
     .put(authenticate.verifyUser, (req, res, next) => {
-        const updateRows = req.body.updateRows || [];
+        const updateRows = Array.isArray(req.body.updateRows) ? req.body.updateRows : [];
         let deleted;
         let updates = [];
         let AFNeedsUpdate = false;
@@ -156,7 +155,6 @@ dashRouter.route('/:kupBoardId/items')
     .get(authenticate.verifyUser, (req, res, next) => {
         Item.find({ inKB: req.params.kupBoardId })
             .then(items => {
-                items = items || [];
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'applications/json');
                 res.json(items);
@@ -167,9 +165,9 @@ dashRouter.route('/:kupBoardId/items')
         if (req.body.newRows) {
             Item.insertMany(req.body.newRows.map(row => { row.inKB = req.params.kupBoardId; return row; }))
                 .then(newDocs => {
-                    Item.find({ inKB: req.params.kupBoardId })
+                    Item.count({ inKB: req.params.kupBoardId, act: true })
                         .then(toCount => {
-                            updateKBArrField(req.params.kupBoardId, 'inventory', Item, { itemTypeCt: toCount.length });
+                            updateKBArrField(req.params.kupBoardId, 'inventory', Item, { itemTypeCt: toCount });
                             res.statusCode = 200;
                             res.setHeader('Content-Type', 'applications/json');
                             res.json({ added: newDocs });
@@ -185,10 +183,9 @@ dashRouter.route('/:kupBoardId/items')
 
     })
     .put(authenticate.verifyUser, (req, res, next) => {
-        const updateRows = req.body.updateRows || [];
+        const updateRows = Array.isArray(req.body.updateRows) ? req.body.updateRows : [];
         let deleted;
         let updates = [];
-        let AFNeedsUpdate = false;
         let promiseList = updateRows.map(row => {
             row.inKB = req.params.kupBoardId;
             if (!row._id) {
@@ -202,20 +199,17 @@ dashRouter.route('/:kupBoardId/items')
             .then(ups => {
                 updates = ups;
                 if (req.body.deleteTargets) {
-                    AFNeedsUpdate = true;
                     Item.deleteMany({ _id: { $in: req.body.deleteTargets }, inKB: req.params.kupBoardId })
                         .then(del => { deleted = del; })
                         .catch(err => next(err));
                 }
             })
             .then(() => {
-                if (AFNeedsUpdate) {
-                    Item.find({ inKB: req.params.kupBoardId })
-                        .then(toCount => {
-                            updateKBArrField(req.params.kupBoardId, 'inventory', Item, { itemTypeCt: toCount.length });
-                        })
-                        .catch(err => next(err));
-                }
+                Item.count({ inKB: req.params.kupBoardId, act: true })
+                    .then(toCount => {
+                        updateKBArrField(req.params.kupBoardId, 'inventory', Item, { itemTypeCt: toCount });
+                    })
+                    .catch(err => next(err));
             })
             .then(() => {
                 res.statusCode = 200;
@@ -228,9 +222,9 @@ dashRouter.route('/:kupBoardId/items')
     .delete(authenticate.verifyUser, (req, res, next) => {
         Item.deleteMany(req.body.deleteTargets ? { _id: { $in: req.body.deleteTargets }, inKB: req.params.kupBoardId } : { inKB: req.params.kupBoardId })
             .then(deleted => {
-                Item.find({ inKB: req.params.kupBoardId })
+                Item.count({ inKB: req.params.kupBoardId, act: true })
                     .then(toCount => {
-                        updateKBArrField(req.params.kupBoardId, 'inventory', Item, { itemTypeCt: toCount.length });
+                        updateKBArrField(req.params.kupBoardId, 'inventory', Item, { itemTypeCt: toCount });
                         res.statusCode = 200;
                         res.setHeader('Content-Type', 'applications/json');
                         res.json({ deleted: deleted });
@@ -256,7 +250,6 @@ dashRouter.route('/:kupBoardId/hours')
     .get(authenticate.verifyUser, (req, res, next) => {
         Schedule.find({ inKB: req.params.kupBoardId })
             .then(hours => {
-                hours = hours || [];
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'applications/json');
                 res.json(hours);
@@ -280,7 +273,7 @@ dashRouter.route('/:kupBoardId/hours')
         }
     })
     .put(authenticate.verifyUser, (req, res, next) => {
-        const updateRows = req.body.updateRows || [];
+        const updateRows = Array.isArray(req.body.updateRows) ? req.body.updateRows : [];
         let deleted;
         let updates = [];
         let AFNeedsUpdate = false;

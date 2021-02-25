@@ -18,6 +18,10 @@ const AnnouncementSchema = new Schema({
         type: String,
         default: ""
     },
+    pubbed: {
+        type: Boolean,
+        default: true
+    },
 },
     { timestamps: true }
 );

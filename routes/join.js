@@ -61,7 +61,7 @@ joinRouter.route('/')
                 ).then(user => {
                     console.log('New Account created ', kupboard, user);
                     res.statusCode = 200;
-                    res.setHeader('Content-Type', 'text/html');
+                    res.setHeader('Content-Type', 'application/json');
                     res.json(user);
                 })
             })
