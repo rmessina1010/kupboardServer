@@ -40,7 +40,7 @@ const KBUserSchema = new Schema({
         default: 0
     }
 });
-KBUserSchema.plugin(passportLocalMongoose);
+KBUserSchema.plugin(passportLocalMongoose, { populateFields: { path: 'kup', select: { _id: 1, userName: 1, name: 1 } } });
 
 // Kupboard
 const kupboardSchema = new Schema({

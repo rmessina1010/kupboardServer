@@ -16,9 +16,9 @@ signinRouter.route('/')
             success: true,
             token: token,
             status: 'You are successfully logged in!',
-            userName: '',
-            kupName: '',
-            kupId: '',
+            kupName: req.user.kup.name,
+            kupId: req.user.kup._id,
+            userName: req.user.kup.userName
         });
     })
     .get(authenticate.verifyUser, (req, res) => {
