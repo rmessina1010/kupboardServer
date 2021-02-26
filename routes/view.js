@@ -1,5 +1,7 @@
 var express = require('express');
 var viewRouter = express.Router();
+const cors = require('./cors');
+
 const kupboardModule = require('../models/kupboard');
 const Kupboard = kupboardModule.Kupboard;
 const Annoucement = require('../models/announcement');
@@ -7,7 +9,8 @@ const Item = require('../models/item');
 
 
 viewRouter.route('/')
-    .get((req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         res.statusCode = 404;
         res.end('Data not available.');
     })
@@ -17,7 +20,8 @@ viewRouter.route('/')
     });
 
 viewRouter.route('/:kupId')
-    .get(function (req, res, next) {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         Kupboard.findById(req.params.kupId, { userName: 0, userLastName: 0, userEmail: 0 })
             .populate('hours')
             .populate({
@@ -42,7 +46,8 @@ viewRouter.route('/:kupId')
     });
 
 viewRouter.route('/:kupId/announce')
-    .get(function (req, res, next) {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         Annoucement.find({ inKB: req.params.kupId, pubbed: true })
             .then(announce => {
                 res.statusCode = 200;
@@ -51,13 +56,14 @@ viewRouter.route('/:kupId/announce')
             })
             .catch(err => next(err));
     })
-    .all((req, res) => {
+    .all(cors.cors, (req, res) => {
         res.statusCode = 405;
         res.end(req.method + ' operation not supported');
     });
 
 viewRouter.route('/:kupId/inventory')
-    .get(function (req, res, next) {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         Item.find({ inKB: req.params.kupId, act: true })
             .then(items => {
                 res.statusCode = 200;
@@ -66,7 +72,7 @@ viewRouter.route('/:kupId/inventory')
             })
             .catch(err => next(err));
     })
-    .all((req, res) => {
+    .all(cors.cors, (req, res) => {
         res.statusCode = 405;
         res.end(req.method + ' operation not supported');
     });

@@ -1,13 +1,16 @@
 var express = require('express');
 var findRouter = express.Router();
 const kupboardModule = require('../models/kupboard');
+const cors = require('./cors');
+
 const Kupboard = kupboardModule.Kupboard;
 
 const segmentSize = 20;
 
 /* GET users listing. */
 findRouter.route('/')
-  .get((req, res, next) => {
+  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+  .get(cors.cors, (req, res, next) => {
     let searchParams = buildSearchParams(req.body.search);
     let segment = req.body.all ? null : segmentSize;
     Kupboard.count(searchParams)
@@ -25,13 +28,14 @@ findRouter.route('/')
       })
       .catch(err => next(err));
   })
-  .all((req, res) => {
+  .all(cors.cors, (req, res) => {
     res.statusCode = 405;
     res.end(req.method + ' operation not supported');
   });
 
 findRouter.route('/:pagination')
-  .get(function (req, res, next) {
+  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+  .get(cors.cors, (req, res, next) => {
     let searchParams = buildSearchParams(req.body);
     let page = parseInt(req.params.pagination) - 1;
     page = isNaN(page) || page < 0 ? 0 : page;
@@ -51,7 +55,7 @@ findRouter.route('/:pagination')
       })
       .catch(err => next(err));
   })
-  .all((req, res) => {
+  .all(cors.cors, (req, res) => {
     res.statusCode = 405;
     res.end(req.method + ' operation not supported');
   });

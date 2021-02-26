@@ -5,10 +5,12 @@ const Kupboard = kupboardModule.Kupboard;
 const KBUser = kupboardModule.KBUser;
 const passport = require('passport');
 const authenticate = require('../authenticate');// also in dash and login
+const cors = require('./cors');
 
 
 joinRouter.route('/')
-    .get((req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         KBUser.find().populate('kup', 'name userEmail userName')
             .then(users => {
                 res.statusCode = 200;
@@ -17,7 +19,7 @@ joinRouter.route('/')
             })
             .catch(err => next(err));
     })
-    .post((req, res, next) => {
+    .post(cors.corsWithOptions, (req, res, next) => {
         newKup = {
             name: req.body.kupboadName,
             img: "/assets/_default_thumb.jpg",
@@ -44,20 +46,6 @@ joinRouter.route('/')
                 KBUser.register(
                     new KBUser({ kup: kupboard._id, username: req.body.kupboadName }),
                     req.body.password
-                    // (err, user) => {
-                    //     if (err) {
-                    //         res.statusCode = 500;
-                    //         res.setHeader('Content-Type', 'text/html');
-                    //         res.json({ err: err, user: user });
-                    //     } else {
-                    //         passport.authenticate('local')(req, res, () => {
-                    //             console.log('New Account created ', kupboard, user);
-                    //             res.statusCode = 200;
-                    //             res.setHeader('Content-Type', 'text/html');
-                    //             res.json(kupboard);
-                    //         });
-                    //     }
-                    // }
                 ).then(user => {
                     console.log('New Account created ', kupboard, user);
                     res.statusCode = 200;
@@ -67,7 +55,7 @@ joinRouter.route('/')
             })
             .catch(err => next(err));
     })
-    .all((req, res) => {
+    .all(cors.cors, (req, res) => {
         res.statusCode = 405;
         res.end(req.method + ' operation not supported.');
     });

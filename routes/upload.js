@@ -2,6 +2,8 @@ var express = require('express');
 const uploadRouter = express.Router();
 const Kupboard = require('../models/kupboard').Kupboard;
 
+const cors = require('./cors');
+
 const authenticate = require('../authenticate');
 const multer = require('multer');
 const fs = require('fs');
@@ -41,7 +43,8 @@ const uploadMast = multer({ storage: storageMast, filer: imageFileFilter });
 
 
 uploadRouter.route('/thumb/:kupboardId')
-    .post(authenticate.verifyUser, uploadThumb.single('imageFile'), (req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .post(cors.corsWithOptions, authenticate.verifyUser, uploadThumb.single('imageFile'), (req, res, next) => {
         Kupboard.findOneAndUpdate({ _id: req.params.kupboardId }, { img: req.file.path })
             .then(() => {
                 res.statusCode = 200;
@@ -56,7 +59,8 @@ uploadRouter.route('/thumb/:kupboardId')
     });
 
 uploadRouter.route('/mast/:kupboardId')
-    .post(authenticate.verifyUser, uploadMast.single('imageFile'), (req, res) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .post(cors.corsWithOptions, authenticate.verifyUser, uploadMast.single('imageFile'), (req, res) => {
         Kupboard.findOneAndUpdate({ _id: req.params.kupboardId }, { mast: req.file.path })
             .then(() => {
                 res.statusCode = 200;
@@ -65,7 +69,7 @@ uploadRouter.route('/mast/:kupboardId')
             })
             .catch(err => next(err));
     })
-    .all((req, res) => {
+    .all(cors.cors, (req, res) => {
         res.statusCode = 405;
         res.end(req.method + ' operation not supported for file uploads.');
     });

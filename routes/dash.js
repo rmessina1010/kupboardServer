@@ -2,6 +2,7 @@ var express = require('express');
 var dashRouter = express.Router();
 const kupboardModule = require('../models/kupboard');
 const mongoose = require('mongoose');
+const cors = require('./cors');
 
 const Kupboard = kupboardModule.Kupboard;
 const KBUser = kupboardModule.KBUser;
@@ -21,13 +22,15 @@ const authenticate = require('../authenticate');
 // }
 
 dashRouter
-    .all('/', authenticate.verifyUser, (req, res) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .all('/', cors.cors, authenticate.verifyUser, (req, res) => {
         res.statusCode = 405;
         res.end(req.method + ' operation not supported.');
     });
 
 dashRouter.route('/:kupBoardId')
-    .get(authenticate.verifyUser, (req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         Kupboard.findById(req.params.kupBoardId)
             .then(theKup => {
                 res.statusCode = 200;
@@ -36,7 +39,7 @@ dashRouter.route('/:kupBoardId')
             })
             .catch(err => next(err));
     })
-    .put(authenticate.verifyUser, (req, res, next) => {
+    .put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         Kupboard.findByIdAndUpdate(req.params.kupBoardId, { $set: req.body.updateKup }, { new: true })
             .then(updated => {
                 res.statusCode = 200;
@@ -45,12 +48,12 @@ dashRouter.route('/:kupBoardId')
             })
             .catch(err => next(err));
     })
-    .post(authenticate.verifyUser, (req, res) => {
+    .post(cors.corsWithOptions, authenticate.verifyUser, (req, res) => {
         res.statusCode = 405;
         res.setHeader('Content-Type', 'applications/json');
         res.json('Operation not supported!');
     })
-    .delete(authenticate.verifyUser, (req, res, next) => {
+    .delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         Kupboard.findByIdAndDelete(req.params.kupBoardId)
             .then(() => {
                 Promise.all([
@@ -72,7 +75,8 @@ dashRouter.route('/:kupBoardId')
 
 //route announcements
 dashRouter.route('/:kupBoardId/announce')
-    .get(authenticate.verifyUser, (req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         Annoucement.find({ inKB: req.params.kupBoardId })
             .then(announcements => {
                 res.statusCode = 200;
@@ -81,7 +85,7 @@ dashRouter.route('/:kupBoardId/announce')
             })
             .catch(err => next(err));
     })
-    .post(authenticate.verifyUser, (req, res, next) => {
+    .post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         if (req.body.newRows) {
             Annoucement.insertMany(req.body.newRows.map(row => { row.inKB = req.params.kupBoardId; return row; }))
                 .then(newDocs => {
@@ -98,7 +102,7 @@ dashRouter.route('/:kupBoardId/announce')
         }
 
     })
-    .put(authenticate.verifyUser, (req, res, next) => {
+    .put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         const updateRows = Array.isArray(req.body.updateRows) ? req.body.updateRows : [];
         let deleted;
         let updates = [];
@@ -132,7 +136,7 @@ dashRouter.route('/:kupBoardId/announce')
             .catch(err => next(err));
 
     })
-    .delete(authenticate.verifyUser, (req, res, next) => {
+    .delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         Annoucement.deleteMany(req.body.deleteTargets ? { _id: { $in: req.body.deleteTargets }, inKB: req.params.kupBoardId } : { inKB: req.params.kupBoardId })
             .then(deleted => {
                 updateKBArrField(req.params.kupBoardId, 'bulletins', Annoucement);
@@ -145,14 +149,10 @@ dashRouter.route('/:kupBoardId/announce')
 
 
 
-
-
-
-
-
 //route items
 dashRouter.route('/:kupBoardId/items')
-    .get(authenticate.verifyUser, (req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         Item.find({ inKB: req.params.kupBoardId })
             .then(items => {
                 res.statusCode = 200;
@@ -161,7 +161,7 @@ dashRouter.route('/:kupBoardId/items')
             })
             .catch(err => next(err));
     })
-    .post(authenticate.verifyUser, (req, res, next) => {
+    .post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         if (req.body.newRows) {
             Item.insertMany(req.body.newRows.map(row => { row.inKB = req.params.kupBoardId; return row; }))
                 .then(newDocs => {
@@ -182,7 +182,7 @@ dashRouter.route('/:kupBoardId/items')
         }
 
     })
-    .put(authenticate.verifyUser, (req, res, next) => {
+    .put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         const updateRows = Array.isArray(req.body.updateRows) ? req.body.updateRows : [];
         let deleted;
         let updates = [];
@@ -219,7 +219,7 @@ dashRouter.route('/:kupBoardId/items')
             .catch(err => next(err));
 
     })
-    .delete(authenticate.verifyUser, (req, res, next) => {
+    .delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         Item.deleteMany(req.body.deleteTargets ? { _id: { $in: req.body.deleteTargets }, inKB: req.params.kupBoardId } : { inKB: req.params.kupBoardId })
             .then(deleted => {
                 Item.count({ inKB: req.params.kupBoardId, act: true })
@@ -236,18 +236,10 @@ dashRouter.route('/:kupBoardId/items')
 
 
 
-
-
-
-
-
-
-
-
-
 //route hours
 dashRouter.route('/:kupBoardId/hours')
-    .get(authenticate.verifyUser, (req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         Schedule.find({ inKB: req.params.kupBoardId })
             .then(hours => {
                 res.statusCode = 200;
@@ -256,7 +248,7 @@ dashRouter.route('/:kupBoardId/hours')
             })
             .catch(err => next(err));
     })
-    .post(authenticate.verifyUser, (req, res, next) => {
+    .post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         if (req.body.newRows) {
             Schedule.insertMany(req.body.newRows.map(row => { row.inKB = req.params.kupBoardId; return row; }))
                 .then(newDocs => {
@@ -272,7 +264,7 @@ dashRouter.route('/:kupBoardId/hours')
             res.json({ added: false, message: 'nothing to insert' });
         }
     })
-    .put(authenticate.verifyUser, (req, res, next) => {
+    .put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         const updateRows = Array.isArray(req.body.updateRows) ? req.body.updateRows : [];
         let deleted;
         let updates = [];
@@ -306,7 +298,7 @@ dashRouter.route('/:kupBoardId/hours')
             .catch(err => next(err));
 
     })
-    .delete(authenticate.verifyUser, (req, res, next) => {
+    .delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         Schedule.deleteMany(req.body.deleteTargets ? { _id: { $in: req.body.deleteTargets }, inKB: req.params.kupBoardId } : { inKB: req.params.kupBoardId })
             .then(deleted => {
                 updateKBArrField(req.params.kupBoardId, 'hours', Schedule);
