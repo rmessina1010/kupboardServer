@@ -34,6 +34,8 @@ const joinRouter = require('./routes/join');
 const signinRouter = require('./routes/signin').signinRouter;
 const signoutRouter = require('./routes/signin').signoutRouter;
 const dashRouter = require('./routes/dash');
+const uploadRouter = require('./routes/upload');
+
 
 /// DB CONECTION BP
 const mongoose = require('mongoose');
@@ -69,6 +71,8 @@ app.use('/join', joinRouter);
 app.use('/signin', signinRouter);
 app.use('/signout', signoutRouter);
 app.use('/dash', dashRouter);
+app.use('/uploads', uploadRouter);
+
 //app.use(auth);
 
 // catch 404 and forward to error handler
