@@ -3,13 +3,13 @@ const cors = require('cors');
 const whitelist = ['http://localhost:3000', 'https://localhost:3443'];
 
 const corsOptionsDelegate = (req, callback) => {
-    let corsOption = {}
+    let corsOptions = {}
     if (whitelist.indexOf(req.header('Origin')) !== -1) {
         corsOptions = { origin: true };
     } else {
         corsOptions = { origin: false };
     }
-    callback(null, corsOption);
+    callback(null, corsOptions);
 };
 
 exports.cors = cors();
