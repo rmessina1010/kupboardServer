@@ -19,9 +19,28 @@ viewRouter.route('/')
         res.end(req.method + ' operation not supported.');
     });
 
-viewRouter.route('/:kupId')
+
+viewRouter.route('/confirm/:kupName')
     .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
     .get(cors.cors, (req, res, next) => {
+        Kupboard.findOne({ name: req.params.kupName }).select('name')
+            .then(kupboard => {
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');//////
+                res.json(kupboard);
+            })
+            .catch((err) => err);
+    })
+    .all((req, res) => {
+        res.statusCode = 405;
+        res.end(req.method + ' operation not supported.');
+    });
+
+
+
+viewRouter.route('/:kupId')
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.corsWithOptions, (req, res, next) => {
         Kupboard.findById(req.params.kupId, { userName: 0, userLastName: 0, userEmail: 0 })
             .populate('hours')
             .populate({

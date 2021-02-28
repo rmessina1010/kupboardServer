@@ -2,6 +2,7 @@ var express = require('express');
 var findRouter = express.Router();
 const kupboardModule = require('../models/kupboard');
 const cors = require('./cors');
+const Helpers = require('./helpers');
 
 const Kupboard = kupboardModule.Kupboard;
 
@@ -11,9 +12,12 @@ const segmentSize = 20;
 findRouter.route('/')
   .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
   .get(cors.cors, (req, res, next) => {
-    let searchParams = buildSearchParams(req.body.search);
-    let segment = req.body.all ? null : segmentSize;
-    Kupboard.count(searchParams)
+
+    bod = Helpers.bodyQueryToObj(req.query);
+    let searchParams = buildSearchParams(bod.search);
+    let segment = bod.all ? null : segmentSize;
+
+    Kupboard.countDocuments(searchParams)
       .then(ofTotal => {
         Kupboard.find(searchParams, { bulletins: 0, userName: 0, userLastName: 0, userEmail: 0, inventory: 0 })
           .populate('hours')
