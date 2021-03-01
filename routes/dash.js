@@ -32,6 +32,10 @@ dashRouter.route('/:kupBoardId')
     .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
     .get(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         Kupboard.findById(req.params.kupBoardId)
+            .populate('hours')
+            .populate('hours')
+            .populate('inventory')
+            .populate('bulletins')
             .then(theKup => {
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'applications/json');
@@ -72,6 +76,29 @@ dashRouter.route('/:kupBoardId')
             .catch(err => next(err));
     });
 
+//route password update
+dashRouter.route('/:kupBoardId/password')
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
+        user = req.body.kup;
+        newpass = req.body.newpass;
+        KBUser.findByUsername(user)
+            .then(theUser => {
+                if (theUser.setPassword) {
+                    theUser.setPassword(newpass, () => {
+                        theUser.save();
+                        res.status(200).json({ message: 'password reset successful' });
+                    });
+                } else {
+                    res.status(500).json({ message: 'This user does not exist' });
+                }
+            })
+            .catch(err => err);
+    })
+    .all(cors.cors, authenticate.verifyUser, (req, res) => {
+        res.statusCode = 405;
+        res.end(req.method + ' operation not supported.');
+    });
 
 //route announcements
 dashRouter.route('/:kupBoardId/announce')
