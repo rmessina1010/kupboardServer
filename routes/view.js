@@ -45,11 +45,13 @@ viewRouter.route('/:kupId')
             .populate('hours')
             .populate({
                 path: 'inventory',
-                match: { act: true }
+                match: { act: true },
+                options: { sort: { 'sortName': 1 } } 
             })
             .populate({
                 path: 'bulletins',
-                match: { pubbed: true }
+                match: { pubbed: true },
+                options: { sort: { 'createdAt': -1 } } 
             })
             .then(kupboard => {
                 res.statusCode = kupboard ? 200 : 404;
@@ -68,6 +70,7 @@ viewRouter.route('/:kupId/announce')
     .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
     .get(cors.cors, (req, res, next) => {
         Annoucement.find({ inKB: req.params.kupId, pubbed: true })
+        .sort({ 'createdAt': -1 })
             .then(announce => {
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'application/json');//////
@@ -84,6 +87,7 @@ viewRouter.route('/:kupId/inventory')
     .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
     .get(cors.cors, (req, res, next) => {
         Item.find({ inKB: req.params.kupId, act: true })
+        .sort({ 'sortName': 1 })
             .then(items => {
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'application/json');//////

@@ -34,7 +34,10 @@ dashRouter.route('/:kupBoardId')
         Kupboard.findById(req.params.kupBoardId)
             .populate('hours')
             .populate('hours')
-            .populate('inventory')
+            .populate({
+                path: 'inventory',
+                options: { sort: { 'sortName': 1 } } 
+            })
             .populate('bulletins')
             .then(theKup => {
                 res.statusCode = 200;
@@ -61,7 +64,7 @@ dashRouter.route('/:kupBoardId')
         Kupboard.findByIdAndDelete(req.params.kupBoardId)
             .then(() => {
                 Promise.all([
-                    KBuser.findOneAndDelete({ kup: req.params.kupBoardId }),
+                    KBUser.findOneAndDelete({ kup: req.params.kupBoardId }),
                     Schedule.deleteMany({ inKB: req.params.kupBoardId }),
                     Annoucement.deleteMany({ inKB: req.params.kupBoardId }),
                     Item.deleteMany({ inKB: req.params.kupBoardId })
@@ -181,6 +184,7 @@ dashRouter.route('/:kupBoardId/items')
     .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
     .get(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         Item.find({ inKB: req.params.kupBoardId })
+        	.sort({sortName:1})
             .then(items => {
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'applications/json');
@@ -190,7 +194,11 @@ dashRouter.route('/:kupBoardId/items')
     })
     .post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         if (req.body.newRows) {
-            Item.insertMany(req.body.newRows.map(row => { row.inKB = req.params.kupBoardId; return row; }))
+            Item.insertMany(req.body.newRows.map(row => { 
+	            row.inKB = req.params.kupBoardId; 
+	            row.sortName = row.name.toLowerCase();
+	            return row; 
+	            }))
                 .then(newDocs => {
                     Item.count({ inKB: req.params.kupBoardId, act: true })
                         .then(toCount => {
@@ -219,6 +227,7 @@ dashRouter.route('/:kupBoardId/items')
                 AFNeedsUpdate = true;
                 row._id = mongoose.Types.ObjectId();
             }
+            row.sortName = row.name.toLowerCase();
             return Item.updateOne({ _id: row._id }, row, { upsert: true, new: true });
         });
         console.log(promiseList);

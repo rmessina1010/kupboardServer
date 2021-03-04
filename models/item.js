@@ -11,6 +11,10 @@ const KupItemSchema = new Schema({
         required: true,
         default: "An Item"
     },
+    sortName: {
+        type: String,
+        default: "an item"
+    },
     req: {
         type: Boolean,
         default: false
