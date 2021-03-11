@@ -20,6 +20,7 @@ findRouter.route('/')
     Kupboard.countDocuments(searchParams)
       .then(ofTotal => {
         Kupboard.find(searchParams, { bulletins: 0, userName: 0, userLastName: 0, userEmail: 0, inventory: 0 })
+          .sort({ itemTypeCt: -1 })
           .populate('hours')
           .limit(segment)
           .then(
@@ -46,6 +47,7 @@ findRouter.route('/:pagination')
     Kupboard.count(searchParams)
       .then(ofTotal => {
         Kupboard.find(searchParams, { bulletins: 0, userName: 0, userLastName: 0, userEmail: 0 })
+          .sort({ itemTypeCt: -1 })
           .populate('hours')
           .limit(segmentSize)
           .skip(page * segmentSize)
@@ -67,7 +69,7 @@ findRouter.route('/:pagination')
 function buildSearchParams(reqBod) {
   let searchParams = { status: "active" };
   if (reqBod) {
-    if (reqBod.city) { searchParams.city = reqBod.city; }
+    if (reqBod.city) { searchParams.city = { $regex: new RegExp(`^${reqBod.city}$`, 'i') }; }
     if (reqBod.zip) { searchParams.zip = reqBod.zip; }
     if (reqBod.state) { searchParams.state = reqBod.state; }
   }
