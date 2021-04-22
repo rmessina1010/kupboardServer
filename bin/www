@@ -16,9 +16,9 @@ const fs = require('fs');
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '80');
+var port = normalizePort(process.env.PORT || 3000);
 app.set('port', port);
-app.set('secPort', 443);
+app.set('secPort', process.env.PORT ? process.env.PORT : port + 443);
 
 /**
  * Create HTTP server.
