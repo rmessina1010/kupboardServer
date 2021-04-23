@@ -10,10 +10,10 @@ const passport = require('passport');
 const config = require('./config');
 
 var app = express();
-// app.all('*', (req, res, next) => {
-//   if (req.secure) { return next(); }
-//   res.redirect(307, `https://${req.hostname}:${app.get('secPort')}${req.url}`); // Using 307 instead of 301 to preserve redirection method
-// })
+app.all('*', (req, res, next) => {
+  if (req.secure) { return next(); }
+  res.redirect(307, `https://${req.hostname}:${app.get('secPort')}${req.url}`); // Using 307 instead of 301 to preserve redirection method
+})
 
 app.use(passport.initialize());
 app.use(passport.session());

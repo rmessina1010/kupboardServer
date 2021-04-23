@@ -21,7 +21,7 @@ var server_host = process.env.YOUR_HOST || '0.0.0.0';
 
 var port = normalizePort(process.env.PORT || 3000);
 app.set('port', port);
-// app.set('secPort', process.env.PORT ? process.env.PORT : port + 443);
+app.set('secPort', process.env.PORT ? process.env.PORT : port + 443);
 
 /**
  * Create HTTP server.
@@ -38,15 +38,15 @@ server.on('error', onError);
 server.on('listening', onListening);
 
 /// CREATES HTTPS server.////
-// const options = {
-//   key: fs.readFileSync(__dirname + '/server.key'),
-//   cert: fs.readFileSync(__dirname + '/server.cert')
-// };
-// const secureServer = https.createServer(options, app);
+const options = {
+  key: fs.readFileSync(__dirname + '/server.key'),
+  cert: fs.readFileSync(__dirname + '/server.cert')
+};
+const secureServer = https.createServer(options, app);
 
-// secureServer.listen(app.get('secPort'));
-// secureServer.on('error', onError);
-// secureServer.on('listening', onListening);
+secureServer.listen(app.get('secPort'));
+secureServer.on('error', onError);
+secureServer.on('listening', onListening);
 
 /**
  * Normalize a port into a number, string, or false.
