@@ -10,8 +10,8 @@ const segmentSize = 20;
 
 /* GET users listing. */
 findRouter.route('/')
-  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
-  .get(cors.cors, (req, res, next) => {
+  .options(/*cors.corsWithOptions,*/(req, res) => res.sendStatus(200))
+  .get(/*cors.cors,*/(req, res, next) => {
 
     bod = Helpers.bodyQueryToObj(req.query);
     let searchParams = buildSearchParams(bod.search);
@@ -33,14 +33,14 @@ findRouter.route('/')
       })
       .catch(err => next(err));
   })
-  .all(cors.cors, (req, res) => {
+  .all(/*cors.cors,*/(req, res) => {
     res.statusCode = 405;
     res.end(req.method + ' operation not supported');
   });
 
 findRouter.route('/:pagination')
-  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
-  .get(cors.cors, (req, res, next) => {
+  .options(/*cors.corsWithOptions,*/(req, res) => res.sendStatus(200))
+  .get(/*cors.cors,*/(req, res, next) => {
     let searchParams = buildSearchParams(req.body);
     let page = parseInt(req.params.pagination) - 1;
     page = isNaN(page) || page < 0 ? 0 : page;
@@ -61,7 +61,7 @@ findRouter.route('/:pagination')
       })
       .catch(err => next(err));
   })
-  .all(cors.cors, (req, res) => {
+  .all(/*cors.cors,*/(req, res) => {
     res.statusCode = 405;
     res.end(req.method + ' operation not supported');
   });

@@ -9,8 +9,8 @@ const cors = require('./cors');
 
 
 signinRouter.route('/')
-    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
-    .post(cors.corsWithOptions, passport.authenticate('local'), (req, res) => {
+    .options(/*cors.corsWithOptions,*/(req, res) => res.sendStatus(200))
+    .post(/*cors.corsWithOptions,*/ passport.authenticate('local'), (req, res) => {
         const token = authenticate.getToken({ _id: req.user._id });
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -23,7 +23,7 @@ signinRouter.route('/')
             userName: req.user.kup.userName
         });
     })
-    .get(cors.corsWithOptions, authenticate.verifyUser, (req, res) => {
+    .get(/*cors.corsWithOptions,*/ authenticate.verifyUser, (req, res) => {
         KBUser.find(req.user._id).populate('kup', 'name userEmail userName')
             .then(user => {
                 res.statusCode = 200;
@@ -31,14 +31,14 @@ signinRouter.route('/')
                 res.json(user);
             });
     })
-    .all(cors.cors, (req, res) => {
+    .all(/*cors.cors,*/(req, res) => {
         res.statusCode = 405;
         res.end(req.method + ' operation not supported.');
     });
 
 signoutRouter.route('/')
-    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
-    .get(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
+    .options(/*cors.corsWithOptions,*/(req, res) => res.sendStatus(200))
+    .get(/*cors.corsWithOptions,*/ authenticate.verifyUser, (req, res, next) => {
         KBUser.findByIdAndUpdate(req.user._id, { last: Math.floor(Date.now() / 1000) })
             .then(() => {
                 if (req.session) {
@@ -54,7 +54,7 @@ signoutRouter.route('/')
                 return next(err);
             });
     })
-    .all(cors.cors, (req, res) => {
+    .all(/*cors.cors,*/(req, res) => {
         res.statusCode = 405;
         res.end(req.method + ' operation not supported.');
     });
