@@ -7,7 +7,7 @@ const corsOptionsDelegate = (req, callback) => {
     if (whitelist.indexOf(req.header('Origin')) !== -1) {
         corsOptions = { origin: true };
     } else {
-        corsOptions = { origin: false };
+        corsOptions = { origin: true }; //false
     }
     callback(null, corsOptions);
 };
