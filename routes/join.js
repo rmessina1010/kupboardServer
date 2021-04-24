@@ -9,9 +9,9 @@ const cors = require('./cors');
 
 
 joinRouter.route('/')
-    .options(/*cors.corsWithOptions,*/(req, res) => res.sendStatus(200))
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
     //comment out
-    .get(/*cors.cors,*/(req, res, next) => {
+    .get(cors.cors, (req, res, next) => {
         KBUser.find().populate('kup', 'name userEmail userName')
             .then(users => {
                 res.statusCode = 200;
@@ -20,7 +20,7 @@ joinRouter.route('/')
             })
             .catch(err => next(err));
     })
-    .post(/*cors.corsWithOptions,*/(req, res, next) => {
+    .post(cors.corsWithOptions, (req, res, next) => {
         newKup = {
             name: req.body.kupboadName,
             img: "/assets/_default_thumb.jpg",
@@ -56,7 +56,7 @@ joinRouter.route('/')
             })
             .catch(err => next(err));
     })
-    .all(/*cors.cors,*/(req, res) => {
+    .all(cors.cors, (req, res) => {
         res.statusCode = 405;
         res.end(req.method + ' operation not supported.');
     });
