@@ -24,7 +24,12 @@ app.set('secPort', port + 443);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+// Determine if we're running on Render
+const isRender = process.env.RENDER === 'true';
+
+var server = http.createServer(app, ()=>{
+  console.log(`Server running on http://localhost:${PORT} (${isRenderRender ? 'production, via Render' : 'dev or not Render'})`)
+});
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -34,16 +39,19 @@ server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
-/// CREATES HTTPS server.////
-const options = {
-  key: fs.readFileSync(__dirname + '/server.key'),
-  cert: fs.readFileSync(__dirname + '/server.cert')
-};
-const secureServer = https.createServer(options, app);
+if (!isRender){
+  /// CREATES HTTPS server, if not hosted on Render////
+  const options = {
+    key: fs.readFileSync(__dirname + '/server.key'),
+    cert: fs.readFileSync(__dirname + '/server.cert')
+  };
 
-secureServer.listen(app.get('secPort'));
-secureServer.on('error', onError);
-secureServer.on('listening', onListening);
+  const secureServer = https.createServer(options, app);
+
+  secureServer.listen(app.get('secPort'));
+  secureServer.on('error', onError);
+  secureServer.on('listening', onListening);
+}
 
 /**
  * Normalize a port into a number, string, or false.
