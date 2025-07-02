@@ -35,12 +35,7 @@ var server = http.createServer(app, ()=>{
  * Listen on provided port, on all network interfaces.
  */
 
-if (!isRender){ server.listen(port);}
-else { server.listen(port, '0.0.0.0', () => { 
-    // Bind to 0.0.0.0
-    console.log(`Server running on port ${port},for Render`);
-});}
-
+server.listen(port, '0.0.0.0');
 server.on('error', onError);
 server.on('listening', onListening);
 
