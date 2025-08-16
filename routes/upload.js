@@ -13,15 +13,6 @@ const fs = require('fs');
 
 const isRemote = !!process.env.SECRET_DEST_URL;
 
-////
-const KBUser = require('../models/kupboard').KBUser;
-const fakeAuth = async (req, res, next) => {
-  console.log('Fake auth used');
-  req.user = await KBUser.findById(	{"_id" : process.env.SECRET_KBID}); 
-  next();
-};
-
-
 // returns a multer instance for either thumb or mast uploads
 function createUploader(imageType) {
   const storage = isRemote
