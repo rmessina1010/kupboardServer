@@ -1,5 +1,8 @@
 var express = require('express');
 const uploadRouter = express.Router();
+const FormData = require('form-data');
+const fetch = require('node-fetch');
+
 const Kupboard = require('../models/kupboard').Kupboard;
 
 const cors = require('./cors');
@@ -8,27 +11,32 @@ const authenticate = require('../authenticate');
 const multer = require('multer');
 const fs = require('fs');
 
-const storageThumb = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const path = 'public/images/' + req.params.kupboardId + '/thumbs';
-        fs.mkdirSync(path, { recursive: true });
-        cb(null, path);
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.originalname);
-    }
-});
+const isRemote = !!process.env.SECRET_DEST_URL;
 
-const storageMast = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const path = 'public/images/' + req.params.kupboardId + '/mast';
-        fs.mkdirSync(path, { recursive: true });
-        cb(null, path);
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.originalname);
-    }
-});
+////
+const KBUser = require('../models/kupboard').KBUser;
+const fakeAuth = async (req, res, next) => {
+  console.log('Fake auth used');
+  req.user = await KBUser.findById(	{"_id" : process.env.SECRET_KBID}); 
+  next();
+};
+
+
+// returns a multer instance for either thumb or mast uploads
+function createUploader(imageType) {
+  const storage = isRemote
+    ? multer.memoryStorage()
+    : multer.diskStorage({
+        destination: (req, file, cb) => {
+          const path = `public/images/${req.params.kupboardId}/${imageType}`;
+          fs.mkdirSync(path, { recursive: true });
+          cb(null, path);
+        },
+        filename: (req, file, cb) => cb(null, file.originalname),
+      });
+
+  return multer({ storage, fileFilter: imageFileFilter }).single('imageFile');
+}
 
 const imageFileFilter = (req, file, cb) => {
     if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
@@ -37,40 +45,82 @@ const imageFileFilter = (req, file, cb) => {
     cb(null, true);
 };
 
-const uploadThumb = multer({ storage: storageThumb, filer: imageFileFilter });
-const uploadMast = multer({ storage: storageMast, filer: imageFileFilter });
+const uploadThumb = createUploader('thumbs');
+const uploadMast = createUploader('mast');
 
-
-
+// Handle thumb upload
 uploadRouter.route('/thumb/:kupboardId')
-    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
-    .post(cors.corsWithOptions, authenticate.verifyUser, uploadThumb.single('imageFile'), (req, res, next) => {
-        Kupboard.findOneAndUpdate({ _id: req.params.kupboardId }, { img: req.file.path.replace('public','') })
-            .then(() => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(req.file);
-            })
-            .catch(err => next(err));
-    })
-    .all((req, res) => {
-        res.statusCode = 405;
-        res.end(req.method + ' operation not supported for file uploads.');
-    });
+  .post(cors.corsWithOptions, authenticate.verifyUser, uploadThumb, async (req, res, next) => {
+    try {
+      if (isRemote) {
+        const form = new FormData();
+        form.append('thumbs', req.file.buffer, {
+          filename: req.file.originalname,
+          contentType: req.file.mimetype,
+        });
+        form.append('token', process.env.SECRET_DEST);
+        form.append('kbid', req.params.kupboardId || 'defaultkup');
 
+        const response = await fetch(process.env.SECRET_DEST_URL + '/kb_uploads.php', {
+          method: 'POST',
+          body: form,
+          headers: form.getHeaders()
+        });
+
+        await Kupboard.findOneAndUpdate(
+          { _id: req.params.kupboardId },
+          { mast: `${process.env.SECRET_DEST_URL}/${req.params.kupboardId}/thumbs/${req.file.originalname}`}
+        );
+
+        res.status(200).json({ success: true, data });
+      } else {
+        await Kupboard.findOneAndUpdate(
+          { _id: req.params.kupboardId },
+          { img: req.file.path.replace('public', '') }
+        );
+        res.status(200).json(req.file);
+      }
+    } catch (err) {
+      next(err);
+    }
+  });
+
+// Handle mast upload
 uploadRouter.route('/mast/:kupboardId')
-    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
-    .post(cors.corsWithOptions, authenticate.verifyUser, uploadMast.single('imageFile'), (req, res) => {
-        Kupboard.findOneAndUpdate({ _id: req.params.kupboardId }, { mast: req.file.path.replace('public','')  })
-            .then(() => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(req.file);
-            })
-            .catch(err => next(err));
-    })
-    .all(cors.cors, (req, res) => {
-        res.statusCode = 405;
-        res.end(req.method + ' operation not supported for file uploads.');
-    });
+  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+  .post(cors.corsWithOptions, authenticate.verifyUser, uploadMast, async (req, res, next) => {
+      try {
+      if (isRemote) {
+        const form = new FormData();
+        form.append('mast', req.file.buffer, {
+          filename: req.file.originalname,
+          contentType: req.file.mimetype,
+        });
+        form.append('token', process.env.SECRET_DEST);
+        form.append('kbid', req.params.kupboardId || 'defaultkup');
+
+        const response = await fetch(process.env.SECRET_DEST_URL + '/kb_uploads.php', {
+          method: 'POST',
+          body: form,
+          headers: form.getHeaders()
+        });
+
+        const data = await Kupboard.findOneAndUpdate(
+          { _id: req.params.kupboardId },
+          { mast: `${process.env.SECRET_DEST_URL}/${req.params.kupboardId}/mast/${req.file.originalname}`}
+        );
+
+        res.status(200).json({ success: true, data }); // remove-update
+      } else {
+        await Kupboard.findOneAndUpdate(
+          { _id: req.params.kupboardId },
+          { mast: req.file.path.replace('public', '') }
+        );
+        res.status(200).json(req.file);
+      }
+    } catch (err) {
+      next(err);
+    }
+  });
+
 module.exports = uploadRouter;
