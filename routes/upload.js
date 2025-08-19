@@ -41,8 +41,9 @@ const uploadMast = createUploader('mast');
 
 // Handle thumb upload
 uploadRouter.route('/thumb/:kupboardId')
+  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
   .post(cors.corsWithOptions, authenticate.verifyUser, uploadThumb, async (req, res, next) => {
-    try {
+      try {
       if (isRemote) {
         const form = new FormData();
         form.append('thumbs', req.file.buffer, {
@@ -58,19 +59,17 @@ uploadRouter.route('/thumb/:kupboardId')
           headers: form.getHeaders()
         });
 
-        await Kupboard.findOneAndUpdate(
+        const data = await Kupboard.findOneAndUpdate(
           { _id: req.params.kupboardId },
-          { mast: `${process.env.SECRET_DEST_URL}/${req.params.kupboardId}/thumbs/${req.file.originalname}`}
+          { img: `/${req.params.kupboardId}/thumbs/${req.file.originalname}`}
         );
-
-        res.status(200).json({ success: true, data });
       } else {
-        await Kupboard.findOneAndUpdate(
+        const data = await Kupboard.findOneAndUpdate(
           { _id: req.params.kupboardId },
           { img: req.file.path.replace('public', '') }
         );
-        res.status(200).json(req.file);
       }
+      res.status(200).json({ success: true, data });  
     } catch (err) {
       next(err);
     }
@@ -98,17 +97,15 @@ uploadRouter.route('/mast/:kupboardId')
 
         const data = await Kupboard.findOneAndUpdate(
           { _id: req.params.kupboardId },
-          { mast: `${process.env.SECRET_DEST_URL}/${req.params.kupboardId}/mast/${req.file.originalname}`}
+          { mast: `/${req.params.kupboardId}/mast/${req.file.originalname}`}
         );
-
-        res.status(200).json({ success: true, data }); // remove-update
       } else {
-        await Kupboard.findOneAndUpdate(
+        const data = await Kupboard.findOneAndUpdate(
           { _id: req.params.kupboardId },
           { mast: req.file.path.replace('public', '') }
         );
-        res.status(200).json(req.file);
       }
+      res.status(200).json({ success: true, data });  
     } catch (err) {
       next(err);
     }
