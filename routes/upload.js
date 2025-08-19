@@ -61,7 +61,7 @@ uploadRouter.route('/thumb/:kupboardId')
 
         const data = await Kupboard.findOneAndUpdate(
           { _id: req.params.kupboardId },
-          { img: `/${req.params.kupboardId}/thumbs/${req.file.originalname}`}
+          { img: `/images/${req.params.kupboardId}/thumbs/${req.file.originalname}`}
         );
       } else {
         const data = await Kupboard.findOneAndUpdate(
@@ -97,7 +97,7 @@ uploadRouter.route('/mast/:kupboardId')
 
         const data = await Kupboard.findOneAndUpdate(
           { _id: req.params.kupboardId },
-          { mast: `/${req.params.kupboardId}/mast/${req.file.originalname}`}
+          { mast: `/images/${req.params.kupboardId}/mast/${req.file.originalname}`}
         );
       } else {
         const data = await Kupboard.findOneAndUpdate(
